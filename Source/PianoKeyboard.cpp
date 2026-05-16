@@ -21,8 +21,8 @@ namespace vocalpitch
 
     float PianoKeyboard::yForMidi (float midiNote, float height) const
     {
-        const float lo = (float) kLowestMidiNote - 0.5f;
-        const float hi = (float) kHighestMidiNote + 0.5f;
+        const float lo = centerMidi - visibleSpan * 0.5f;
+        const float hi = centerMidi + visibleSpan * 0.5f;
         const float norm = (midiNote - lo) / (hi - lo);
         return height - norm * height;
     }
@@ -35,7 +35,12 @@ namespace vocalpitch
 
         g.fillAll (juce::Colour::fromRGB (24, 24, 28));
 
-        for (int n = kLowestMidiNote; n <= kHighestMidiNote; ++n)
+        const int loVisible = (int) std::floor (centerMidi - visibleSpan * 0.5f) - 1;
+        const int hiVisible = (int) std::ceil  (centerMidi + visibleSpan * 0.5f) + 1;
+        const int loN = juce::jmax (kLowestMidiNote,  loVisible);
+        const int hiN = juce::jmin (kHighestMidiNote, hiVisible);
+
+        for (int n = loN; n <= hiN; ++n)
         {
             const float yTop = yForMidi ((float) n + 0.5f, h);
             const float yBot = yForMidi ((float) n - 0.5f, h);
@@ -50,11 +55,10 @@ namespace vocalpitch
             g.setColour (bg);
             g.fillRect (r.reduced (1.0f, 0.5f));
 
-            // Only draw text when the row is tall enough to read.
             if (r.getHeight() >= 9.0f)
             {
                 g.setColour (text);
-                g.setFont (juce::FontOptions (juce::jmin (12.0f, r.getHeight() - 2.0f)));
+                g.setFont (juce::FontOptions (juce::jmin (14.0f, r.getHeight() - 4.0f)));
                 g.drawText (noteName (n), r.reduced (4.0f, 0.0f), juce::Justification::centredLeft);
             }
         }

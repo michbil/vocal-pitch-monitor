@@ -23,7 +23,7 @@ namespace vocalpitch
     private:
         PianoKeyboard& keyboard;
         std::deque<PitchSample> history;
-        double windowSeconds = 6.0;
+        double windowSeconds = 12.0;
         double nowTime = 0.0;
     };
 }

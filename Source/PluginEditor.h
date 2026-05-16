@@ -27,5 +27,6 @@ namespace vocalpitch
 
         double uiTimeSec = 0.0;
         double lastTickMs = 0.0;
+        float  targetCenterMidi = 60.0f;
     };
 }

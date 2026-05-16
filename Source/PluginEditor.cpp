@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include "NoteRange.h"
 
 namespace vocalpitch
 {
@@ -30,8 +31,6 @@ namespace vocalpitch
 
     void VocalPitchEditor::timerCallback()
     {
-        // Advance the UI clock by wall-clock time. This keeps the graph scrolling
-        // smoothly even between processBlock callbacks.
         const double now = juce::Time::getMillisecondCounterHiRes();
         const double dt  = (now - lastTickMs) / 1000.0;
         lastTickMs = now;
@@ -39,15 +38,36 @@ namespace vocalpitch
 
         PitchSample buf[256];
         int got;
+        float latestVoiced = -1.0f;
         while ((got = vpProcessor.drainPitches (buf, 256)) > 0)
         {
-            // Re-align the UI clock so the newest pitch sample stays at the right edge.
             uiTimeSec = std::max (uiTimeSec, buf[got - 1].timeSec);
             graph.addSamples (buf, got);
+            for (int i = got - 1; i >= 0; --i)
+                if (buf[i].midiNote >= 0.0f) { latestVoiced = buf[i].midiNote; break; }
             if (got < 256) break;
         }
 
+        // Update auto-scroll target from the latest voiced pitch.
+        if (latestVoiced > 0.0f)
+        {
+            // Smooth the target a bit so brief outliers don't whip the viewport.
+            targetCenterMidi += 0.35f * (latestVoiced - targetCenterMidi);
+
+            // Keep the viewport inside the supported note range.
+            const float half = keyboard.getVisibleSpan() * 0.5f;
+            targetCenterMidi = juce::jlimit ((float) kLowestMidiNote  + half,
+                                              (float) kHighestMidiNote - half,
+                                              targetCenterMidi);
+        }
+
+        // Smooth the visible center toward the target (frame-rate independent).
+        const float k = 1.0f - std::exp (-(float) dt * 4.0f); // ~250ms time constant
+        const float current = keyboard.getViewportCenter();
+        keyboard.setViewportCenter (current + k * (targetCenterMidi - current));
+
         graph.setNowTime (uiTimeSec);
+        keyboard.repaint();
         graph.repaint();
     }
 }
