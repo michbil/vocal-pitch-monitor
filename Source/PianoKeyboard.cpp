@@ -33,42 +33,30 @@ namespace vocalpitch
         const float w = bounds.getWidth();
         const float h = bounds.getHeight();
 
-        g.fillAll (juce::Colour::fromRGB (30, 30, 34));
+        g.fillAll (juce::Colour::fromRGB (24, 24, 28));
 
-        const float whiteW = w;
-        const float blackW = w * 0.62f;
-
-        // White keys first.
         for (int n = kLowestMidiNote; n <= kHighestMidiNote; ++n)
         {
-            if (isBlackKey (n)) continue;
             const float yTop = yForMidi ((float) n + 0.5f, h);
             const float yBot = yForMidi ((float) n - 0.5f, h);
-            juce::Rectangle<float> r (0.0f, yTop, whiteW, yBot - yTop);
+            juce::Rectangle<float> r (0.0f, yTop, w, yBot - yTop);
 
-            g.setColour (juce::Colours::white);
-            g.fillRect (r.reduced (0.0f, 0.5f));
-            g.setColour (juce::Colour::fromRGB (60, 60, 60));
-            g.drawRect (r, 0.5f);
+            const bool black = isBlackKey (n);
+            const juce::Colour bg   = black ? juce::Colour::fromRGB (40,  40,  46)
+                                            : juce::Colour::fromRGB (210, 210, 215);
+            const juce::Colour text = black ? juce::Colour::fromRGB (200, 200, 205)
+                                            : juce::Colour::fromRGB (40,  40,  46);
 
-            // C label.
-            if ((n % 12) == 0)
+            g.setColour (bg);
+            g.fillRect (r.reduced (1.0f, 0.5f));
+
+            // Only draw text when the row is tall enough to read.
+            if (r.getHeight() >= 9.0f)
             {
-                g.setColour (juce::Colour::fromRGB (80, 80, 80));
-                g.setFont (juce::FontOptions (10.0f));
-                g.drawText (noteName (n), r.reduced (3.0f), juce::Justification::centredLeft);
+                g.setColour (text);
+                g.setFont (juce::FontOptions (juce::jmin (12.0f, r.getHeight() - 2.0f)));
+                g.drawText (noteName (n), r.reduced (4.0f, 0.0f), juce::Justification::centredLeft);
             }
-        }
-
-        // Black keys on top.
-        for (int n = kLowestMidiNote; n <= kHighestMidiNote; ++n)
-        {
-            if (! isBlackKey (n)) continue;
-            const float yTop = yForMidi ((float) n + 0.5f, h);
-            const float yBot = yForMidi ((float) n - 0.5f, h);
-            juce::Rectangle<float> r (0.0f, yTop, blackW, yBot - yTop);
-            g.setColour (juce::Colours::black);
-            g.fillRect (r);
         }
     }
 }
