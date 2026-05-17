@@ -14,12 +14,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(JUCE)
 
 juce_add_plugin(VocalPitch
-    COMPANY_NAME "Florio"
+    COMPANY_NAME "Michael Bilenko"
     PLUGIN_MANUFACTURER_CODE Flor
     PLUGIN_CODE Vpch
     FORMATS AU
     PRODUCT_NAME "VocalPitch"
-    BUNDLE_ID com.florio.vocalpitch
+    BUNDLE_ID com.michbilenko.vocalpitch
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE

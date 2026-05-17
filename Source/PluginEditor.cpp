@@ -7,6 +7,7 @@ namespace vocalpitch
         : juce::AudioProcessorEditor (&p), vpProcessor (p)
     {
         addAndMakeVisible (keyboard);
+        addAndMakeVisible (keyboardRight);
         addAndMakeVisible (graph);
         setResizable (true, true);
         setResizeLimits (480, 240, 4000, 2000);
@@ -24,8 +25,9 @@ namespace vocalpitch
     void VocalPitchEditor::resized()
     {
         auto r = getLocalBounds();
-        const int keyboardWidth = juce::jlimit (60, 110, r.getWidth() / 8);
-        keyboard.setBounds (r.removeFromLeft (keyboardWidth));
+        const int keyboardWidth = juce::jlimit (32, 56, r.getWidth() / 16);
+        keyboard     .setBounds (r.removeFromLeft  (keyboardWidth));
+        keyboardRight.setBounds (r.removeFromRight (keyboardWidth));
         graph.setBounds (r);
     }
 
@@ -64,10 +66,13 @@ namespace vocalpitch
         // Smooth the visible center toward the target (frame-rate independent).
         const float k = 1.0f - std::exp (-(float) dt * 4.0f); // ~250ms time constant
         const float current = keyboard.getViewportCenter();
-        keyboard.setViewportCenter (current + k * (targetCenterMidi - current));
+        const float updated = current + k * (targetCenterMidi - current);
+        keyboard     .setViewportCenter (updated);
+        keyboardRight.setViewportCenter (updated);
 
         graph.setNowTime (uiTimeSec);
         keyboard.repaint();
+        keyboardRight.repaint();
         graph.repaint();
     }
 }

@@ -23,6 +23,7 @@ namespace vocalpitch
 
         VocalPitchProcessor& vpProcessor;
         PianoKeyboard keyboard;
+        PianoKeyboard keyboardRight;
         PitchGraph    graph { keyboard };
 
         double uiTimeSec = 0.0;

@@ -58,8 +58,8 @@ namespace vocalpitch
             if (r.getHeight() >= 9.0f)
             {
                 g.setColour (text);
-                g.setFont (juce::FontOptions (juce::jmin (14.0f, r.getHeight() - 4.0f)));
-                g.drawText (noteName (n), r.reduced (4.0f, 0.0f), juce::Justification::centredLeft);
+                g.setFont (juce::FontOptions (juce::jmin (11.0f, r.getHeight() - 4.0f)));
+                g.drawText (noteName (n), r.reduced (2.0f, 0.0f), juce::Justification::centred);
             }
         }
     }
