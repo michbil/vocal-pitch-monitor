@@ -18,7 +18,7 @@ juce_add_plugin(VocalPitch
     PLUGIN_MANUFACTURER_CODE Flor
     PLUGIN_CODE Vpch
     FORMATS AU
-    PRODUCT_NAME "VocalPitch"
+    PRODUCT_NAME "VocalPitchMonitor"
     BUNDLE_ID com.michbilenko.vocalpitch
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
