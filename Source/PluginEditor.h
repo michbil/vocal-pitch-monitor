@@ -20,6 +20,7 @@ namespace vocalpitch
 
     private:
         void timerCallback() override;
+        void paintDiagnostics (juce::Graphics&, juce::Rectangle<int> area);
 
         VocalPitchProcessor& vpProcessor;
         PianoKeyboard keyboard;

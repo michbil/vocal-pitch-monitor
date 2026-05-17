@@ -23,35 +23,65 @@ namespace vocalpitch
 
     bool VocalPitchProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     {
-        const auto& mainOut = layouts.getMainOutputChannelSet();
-        if (mainOut != juce::AudioChannelSet::mono() && mainOut != juce::AudioChannelSet::stereo())
+        const auto& in  = layouts.getMainInputChannelSet();
+        const auto& out = layouts.getMainOutputChannelSet();
+
+        // Accept any non-disabled in/out layout with at least one channel —
+        // built-in MacBook mic exposes as 3-channel array, USB interfaces vary.
+        if (in.isDisabled() || out.isDisabled())
             return false;
-        return layouts.getMainInputChannelSet() == mainOut;
+        if (in.size() < 1 || out.size() < 1)
+            return false;
+        return true;
     }
 
     void VocalPitchProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
     {
         juce::ScopedNoDenormals noDenormals;
 
-        const int numSamples  = buffer.getNumSamples();
-        const int numChannels = buffer.getNumChannels();
+        const int numSamples = buffer.getNumSamples();
+
+        // Read from the input bus explicitly — input channel count may differ
+        // from the output bus (e.g. mono mic into a stereo track).
+        auto inputBuffer = getBusBuffer (buffer, true, 0);
+        const int inputChannels = inputBuffer.getNumChannels();
 
         if ((int) monoBuffer.size() < numSamples)
             monoBuffer.assign ((size_t) numSamples, 0.0f);
 
-        // Downmix to mono in-place (no allocation).
-        if (numChannels == 1)
+        if (inputChannels <= 0)
         {
-            const float* src = buffer.getReadPointer (0);
+            std::fill (monoBuffer.begin(), monoBuffer.begin() + numSamples, 0.0f);
+        }
+        else if (inputChannels == 1)
+        {
+            const float* src = inputBuffer.getReadPointer (0);
             for (int i = 0; i < numSamples; ++i)
                 monoBuffer[(size_t) i] = src[i];
         }
         else
         {
-            const float* l = buffer.getReadPointer (0);
-            const float* r = buffer.getReadPointer (1);
+            // Average all available input channels.
+            const float scale = 1.0f / (float) inputChannels;
             for (int i = 0; i < numSamples; ++i)
-                monoBuffer[(size_t) i] = 0.5f * (l[i] + r[i]);
+                monoBuffer[(size_t) i] = 0.0f;
+            for (int ch = 0; ch < inputChannels; ++ch)
+            {
+                const float* src = inputBuffer.getReadPointer (ch);
+                for (int i = 0; i < numSamples; ++i)
+                    monoBuffer[(size_t) i] += src[i] * scale;
+            }
+        }
+
+        // Compute RMS of the mono signal we'll feed to the detector — for the UI level meter.
+        {
+            double sumSq = 0.0;
+            for (int i = 0; i < numSamples; ++i)
+                sumSq += (double) monoBuffer[(size_t) i] * (double) monoBuffer[(size_t) i];
+            const float rms = (float) std::sqrt (sumSq / juce::jmax (1, numSamples));
+            const float db  = rms > 1.0e-9f ? 20.0f * std::log10 (rms) : -120.0f;
+            currentRmsDb.store (db);
+            lastInputChannels.store (inputChannels);
         }
 
         const double sr      = detector.getSampleRate();

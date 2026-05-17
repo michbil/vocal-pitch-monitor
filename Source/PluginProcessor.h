@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <atomic>
 #include <array>
+#include <vector>
 
 #include "YinPitchDetector.h"
 
@@ -46,6 +47,10 @@ namespace vocalpitch
         // Returns number of samples written.
         int drainPitches (PitchSample* out, int maxSamples);
 
+        float  getCurrentRmsDb() const noexcept { return currentRmsDb.load(); }
+        int    getInputChannelCount() const noexcept { return lastInputChannels.load(); }
+        double getSampleRate() const noexcept { return juce::AudioProcessor::getSampleRate(); }
+
     private:
         static constexpr int kFifoSize = 4096;
 
@@ -55,6 +60,8 @@ namespace vocalpitch
 
         std::vector<float> monoBuffer;
         double currentTimeSec = 0.0;
+        std::atomic<float> currentRmsDb { -120.0f };
+        std::atomic<int>   lastInputChannels { 0 };
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalPitchProcessor)
     };
