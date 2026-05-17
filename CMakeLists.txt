@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(VocalPitch VERSION 0.1.0)
+project(VocalPitchMonitor VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,20 +13,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JUCE)
 
-juce_add_plugin(VocalPitch
+juce_add_plugin(VocalPitchMonitor
     COMPANY_NAME "Michael Bilenko"
-    PLUGIN_MANUFACTURER_CODE Flor
-    PLUGIN_CODE Vpch
+    PLUGIN_MANUFACTURER_CODE Mbil
+    PLUGIN_CODE Vpmn
     FORMATS AU
     PRODUCT_NAME "VocalPitchMonitor"
-    BUNDLE_ID com.michbilenko.vocalpitch
+    BUNDLE_ID com.michbilenko.vocalpitchmonitor
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     COPY_PLUGIN_AFTER_BUILD TRUE
 )
 
-target_sources(VocalPitch PRIVATE
+target_sources(VocalPitchMonitor PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/YinPitchDetector.cpp
@@ -34,15 +34,15 @@ target_sources(VocalPitch PRIVATE
     Source/PitchGraph.cpp
 )
 
-target_include_directories(VocalPitch PRIVATE Source)
+target_include_directories(VocalPitchMonitor PRIVATE Source)
 
-target_compile_definitions(VocalPitch PRIVATE
+target_compile_definitions(VocalPitchMonitor PRIVATE
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
-target_link_libraries(VocalPitch PRIVATE
+target_link_libraries(VocalPitchMonitor PRIVATE
     juce::juce_audio_utils
     juce::juce_dsp
     juce::juce_audio_plugin_client
